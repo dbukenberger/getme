@@ -37,7 +37,15 @@ void writeMeshFile(const PolygonalMesh& mesh,
                    const std::filesystem::path& outfilePath,
                    const bool includeMeanRatioQuality = true);
 
+// drb
+void writeObjFile(const PolygonalMesh &mesh,
+                  const std::filesystem::path &outfilePath,
+                  const bool includeMeanRatioQuality = true);
+
 PolygonalMesh readMeshFile(const std::filesystem::path& infilePath);
+
+// drb
+PolygonalMesh readObjFile(const std::filesystem::path& infilePath);
 
 // Assign mean ratio numbers of given polygons to given vector.
 void computeMeanRatioQualityNumberOfPolygons(
@@ -61,4 +69,5 @@ bool areEqual(const PolygonalMesh& first,
 // parameter. Distortion usually does not preserve mesh validity.
 PolygonalMesh distortNodesLocally(const PolygonalMesh& mesh,
                                   const double maxDistortionRadius);
+
 }  // namespace Mesh

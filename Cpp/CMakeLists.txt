@@ -6,10 +6,13 @@ project(
   VERSION 1.0.0
   LANGUAGES CXX)
 
+#set(CMAKE_CXX_COMPILER "/usr/bin/gcc-11")
+#set(CMAKE_C_COMPILER "gcc-11")
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_COMPILER_WORKS 1)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
@@ -17,13 +20,13 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.13.0.zip
-  #DOWNLOAD_EXTRACT_TIMESTAMP NEW # uncomment in the case of timestamp warnings
+  DOWNLOAD_EXTRACT_TIMESTAMP NEW # uncomment in the case of timestamp warnings
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-include(CTest)
+#include(CTest)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -35,3 +38,9 @@ add_subdirectory(Mesh)
 add_subdirectory(Smoothing)
 add_subdirectory(Testdata)
 add_subdirectory(Utility)
+
+add_subdirectory(drbGETMe)
+
+include_directories(${PROJECT_SOURCE_DIR}/Utility/pmp-library/src)
+#include_directories(${PROJECT_SOURCE_DIR}/Utility/pmp-library/external/eigen/Eigen)
+#include_directories(Utility/pmp-library/external/eigen)

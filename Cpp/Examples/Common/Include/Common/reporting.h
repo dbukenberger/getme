@@ -44,4 +44,8 @@ void printSmoothingResult(const Smoothing::GetmeResult& result);
 void writeResultMesh(const Mesh::PolygonalMesh& mesh,
                      const std::filesystem::path& initialMeshPath,
                      const std::string& meshName);
+
+// drb
+Mesh::PolygonalMesh readInitialMesh(const std::filesystem::path& initialMeshPath);
+
 }  // namespace Common

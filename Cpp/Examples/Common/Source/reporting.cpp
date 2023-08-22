@@ -142,14 +142,30 @@ void Common::printSmoothingResult(const Smoothing::GetmeResult& result) {
             << result.getmeSequentialIterations << "\n";
 }
 
-void Common::writeResultMesh(const Mesh::PolygonalMesh& mesh,
-                             const std::filesystem::path& initialMeshPath,
-                             const std::string& meshName) {
-  auto pathString = initialMeshPath.string();
-  const auto index = pathString.find("_initial.mesh");
-  Utility::throwExceptionIfTrue(std::string::npos == index,
-                                "File has not the expected name pattern.");
-  pathString = pathString.erase(index) + "_" + meshName + ".mesh";
-  std::cout << "Writing result mesh file " << pathString << "\n";
-  Mesh::writeMeshFile(mesh, pathString);
+void Common::writeResultMesh(const Mesh::PolygonalMesh &mesh, const std::filesystem::path &initialMeshPath, const std::string &meshName) {
+    auto pathString = initialMeshPath.string();
+
+    std::string fExt = initialMeshPath.extension();
+    const auto index = pathString.find(fExt);
+    Utility::throwExceptionIfTrue(std::string::npos == index, "File has an unexpected file extension.");
+
+    pathString = pathString.erase(index) + "_" + meshName + fExt;
+    std::cout << "Writing result mesh file " << pathString << "\n";
+    if (fExt == ".mesh") {
+        Mesh::writeMeshFile(mesh, pathString);
+    } else if (fExt == ".obj") {
+        Mesh::writeObjFile(mesh, pathString);
+    }
+}
+
+Mesh::PolygonalMesh Common::readInitialMesh(const std::filesystem::path &initialMeshPath) {
+    std::string fExt = initialMeshPath.extension();
+    const auto index = initialMeshPath.string().find(fExt);
+
+    if (fExt == ".mesh") {
+        return Mesh::readMeshFile( initialMeshPath);
+    } else if (fExt == ".obj") {
+        return Mesh::readObjFile(initialMeshPath);
+    }
+    Utility::throwException("Unexpected file extension.");
 }

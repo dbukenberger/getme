@@ -28,6 +28,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Mesh/polygonal_mesh.h"
 #include "Utility/exception_handling.h"
 
+#include <pmp/SurfaceMesh.h>
+#include <pmp/Types.h>
+#include <pmp/io/read_obj.h>
+#include "pmp/io/write_obj.h"
+
 #include <algorithm>
 #include <execution>
 #include <fstream>
@@ -109,6 +114,45 @@ void Mesh::writeMeshFile(const PolygonalMesh& mesh,
   }
 }
 
+// drb
+void Mesh::writeObjFile(const PolygonalMesh &mesh, const std::filesystem::path &outfilePath, const bool includeMeanRatioQuality) {
+    Utility::throwExceptionIfFalse(outfilePath.has_filename(), "No filename int outfile path given.");
+    try {
+        pmp::SurfaceMesh smesh;
+
+        for (const auto &node: mesh.getNodes()) {
+            pmp::Point p(node.getX(), node.getY(), 0);
+            smesh.add_vertex(p);
+        }
+
+        for (const auto &polygon: mesh.getPolygons()) {
+            std::vector<pmp::Vertex> face;
+            for (const auto nodeIndex: polygon.getNodeIndices()) {
+                face.push_back(pmp::Vertex(nodeIndex));
+            }
+            smesh.add_face(face);
+        }
+
+        if (includeMeanRatioQuality) {
+            auto meanRatioQualities = smesh.add_face_property<double>("MeanRatioQuality");
+
+            const auto meanRatioQualityNumbers = Mesh::computeMeanRatioQualityNumberOfPolygons(mesh.getPolygons(),mesh.getNodes());
+            int fIdx = 0;
+            for (const auto qualityNumber: meanRatioQualityNumbers) {
+                pmp::Face f(fIdx);
+                meanRatioQualities[f] = qualityNumber;
+                fIdx++;
+            }
+        }
+
+        const pmp::IOFlags flags;
+        pmp::write_obj(smesh, outfilePath, flags);
+
+    } catch (const std::exception &e) {
+        Utility::throwException(e.what());
+    }
+}
+
 namespace {
 void readPolygonalMeshHeader(std::ifstream& infile) {
   std::string line;
@@ -178,21 +222,59 @@ std::unordered_set<std::size_t> readFixedNodeIndices(std::ifstream& infile) {
 }
 }  // namespace
 
-Mesh::PolygonalMesh Mesh::readMeshFile(
-    const std::filesystem::path& infilePath) {
-  Utility::throwExceptionIfFalse(
-      std::filesystem::exists(infilePath),
-      "Did not find input file " + infilePath.string() + ".");
-  try {
-    std::ifstream infile(infilePath);
-    readPolygonalMeshHeader(infile);
-    const auto nodes = readMeshNodes(infile);
-    const auto polygons = readMeshPolygons(infile);
-    const auto fixedNodeIndices = readFixedNodeIndices(infile);
-    return Mesh::PolygonalMesh(nodes, polygons, fixedNodeIndices);
-  } catch (const std::exception& e) {
-    Utility::throwException(e.what());
-  }
+Mesh::PolygonalMesh Mesh::readMeshFile( const std::filesystem::path &infilePath) {
+    Utility::throwExceptionIfFalse(std::filesystem::exists(infilePath),"Did not find input file " + infilePath.string() + ".");
+    try {
+        std::ifstream infile(infilePath);
+        readPolygonalMeshHeader(infile);
+        const auto nodes = readMeshNodes(infile);
+        const auto polygons = readMeshPolygons(infile);
+        const auto fixedNodeIndices = readFixedNodeIndices(infile);
+        return Mesh::PolygonalMesh(nodes, polygons, fixedNodeIndices);
+
+    } catch (const std::exception &e) {
+        Utility::throwException(e.what());
+    }
+}
+
+// drb
+Mesh::PolygonalMesh Mesh::readObjFile(const std::filesystem::path &infilePath) {
+    Utility::throwExceptionIfFalse(std::filesystem::exists(infilePath),"Did not find input file " + infilePath.string() + ".");
+    try {
+        pmp::SurfaceMesh mesh;
+        pmp::read_obj(mesh, infilePath);
+
+        std::vector<Mathematics::Vector2D> nodes;
+        nodes.reserve(mesh.n_vertices());
+
+        std::vector<Mathematics::Polygon> polygons;
+        std::unordered_set<size_t> fixedNodeIndices;
+
+        for (pmp::Vertex v: mesh.vertices()) {
+            pmp::Point p = mesh.position(v);
+            nodes.emplace_back(p[0], p[1]);
+
+            if (mesh.is_boundary(v)) {
+                fixedNodeIndices.insert(v.idx());
+            }
+        }
+
+        for (pmp::Face f: mesh.faces()) {
+            std::vector<std::size_t> nodeIndices;
+            nodeIndices.reserve(mesh.valence(f));
+            std::size_t i = 0;
+            for (pmp::Vertex v: mesh.vertices(f)) {
+                //nodeIndices.push_back(v.idx());
+                nodeIndices.insert(nodeIndices.begin(), v.idx());
+            }
+            polygons.emplace_back(nodeIndices);
+        }
+
+        return Mesh::PolygonalMesh(nodes, polygons, fixedNodeIndices);
+
+    } catch (const std::exception &e) {
+        Utility::throwException(e.what());
+    }
 }
 
 void Mesh::computeMeanRatioQualityNumberOfPolygons(
