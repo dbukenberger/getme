@@ -28,15 +28,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Mesh/polygonal_mesh.h"
 #include "Utility/exception_handling.h"
 
-#include <pmp/SurfaceMesh.h>
 #include <pmp/Types.h>
+#include <pmp/SurfaceMesh.h>
 #include <pmp/io/read_obj.h>
 #include "pmp/io/write_obj.h"
 
 #include <algorithm>
 #include <execution>
 #include <fstream>
-#include <iostream>
 #include <limits>
 
 namespace {

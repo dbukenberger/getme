@@ -6,7 +6,7 @@
 #include <cstdint>
 
 #include "pmp/MatVec.h"
-
+#include <iostream>
 //! The pmp-library namespace
 namespace pmp {
 
@@ -14,11 +14,11 @@ namespace pmp {
 //! @{
 
 //! Scalar type
-#ifdef PMP_SCALAR_TYPE_64
+//#ifdef PMP_SCALAR_TYPE_64
 using Scalar = double;
-#else
-using Scalar = float;
-#endif
+//#else
+//using Scalar = float;
+//#endif
 
 //! Point type
 using Point = Vector<Scalar, 3>;

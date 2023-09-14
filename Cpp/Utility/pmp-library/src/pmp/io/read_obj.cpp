@@ -8,7 +8,7 @@ namespace pmp {
 void read_obj(SurfaceMesh& mesh, const std::filesystem::path& file)
 {
     std::array<char, 200> s;
-    float x, y, z;
+    Scalar x, y, z;
     std::vector<Vertex> vertices;
     std::vector<TexCoord> all_tex_coords; //individual texture coordinates
     std::vector<int>
@@ -35,7 +35,7 @@ void read_obj(SurfaceMesh& mesh, const std::filesystem::path& file)
         // vertex
         else if (strncmp(s.data(), "v ", 2) == 0)
         {
-            if (sscanf(s.data(), "v %f %f %f", &x, &y, &z))
+            if (sscanf(s.data(), "v %lf %lf %lf", &x, &y, &z))
             {
                 mesh.add_vertex(Point(x, y, z));
             }
@@ -44,7 +44,7 @@ void read_obj(SurfaceMesh& mesh, const std::filesystem::path& file)
         // normal
         else if (strncmp(s.data(), "vn ", 3) == 0)
         {
-            if (sscanf(s.data(), "vn %f %f %f", &x, &y, &z))
+            if (sscanf(s.data(), "vn %lf %lf %lf", &x, &y, &z))
             {
                 // problematic as it can be either a vertex property when interpolated
                 // or a halfedge property for hard edges
@@ -54,7 +54,7 @@ void read_obj(SurfaceMesh& mesh, const std::filesystem::path& file)
         // texture coordinate
         else if (strncmp(s.data(), "vt ", 3) == 0)
         {
-            if (sscanf(s.data(), "vt %f %f", &x, &y))
+            if (sscanf(s.data(), "vt %lf %lf", &x, &y))
             {
                 all_tex_coords.emplace_back(x, y);
             }
